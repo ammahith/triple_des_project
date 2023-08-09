@@ -35,11 +35,11 @@ class keyRotation{
         char c[28];
         char d[28];
         int round;
+        arr56 permutation();
+        void getOrigianlBlocks();
     public:
         keyRotation(string key);
-        arr56 permutation();
         string nextRound();
-        void getOrigianlBlocks();
         int getRound(){return round;};
 };
 

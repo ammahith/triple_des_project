@@ -23,7 +23,7 @@ private:
     string key1_; // First 8 bytes of the 2-key or 3-key Triple DES key.
     string key2_; // Second 8 bytes of the 3-key Triple DES key (if applicable).
     string key3_; // Third 8 bytes of the 3-key Triple DES key (if applicable).
-
+    string subkey[16];
     // Helper functions for encryption and decryption.
     //Key rotation will be apart of the des_encrypt function
     //once the other parts are completed
@@ -77,7 +77,7 @@ int TripleDES::toDecimal(string binary){
         int num = 0;
         for (int i = 0; i < 8; i++){
             if (binary[i] == '1'){
-                num = num + pow(2, i);
+                num = num + pow(2, (7-i));
             }
         }
         return num;
