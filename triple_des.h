@@ -4,6 +4,9 @@
 
 #include <string>
 #include <math.h>
+#include "permutation.h"
+#include "function.h"
+#include "key_rotation.h"
 using namespace std;
 class TripleDES {
 public:
@@ -23,12 +26,12 @@ private:
     string key1_; // First 8 bytes of the 2-key or 3-key Triple DES key.
     string key2_; // Second 8 bytes of the 3-key Triple DES key (if applicable).
     string key3_; // Third 8 bytes of the 3-key Triple DES key (if applicable).
-    string subkey[16];
+    
     // Helper functions for encryption and decryption.
     //Key rotation will be apart of the des_encrypt function
     //once the other parts are completed
-    string des_encrypt(const string& input, const string& subkey);
-    string des_decrypt(const string& input, const string& subkey);
+    string des_encrypt(const string& input, const string& key);
+    string des_decrypt(const string& input, const string& key);
     string apply_padding(string& input);
     string remove_padding(string& input);
 
@@ -43,20 +46,12 @@ private:
 TripleDES::TripleDES(const string& key1, const string& key2){
     key1_ = key1;
     key2_ = key2;
-    key3_ = "";
+    key3_ = key1;
 }
 TripleDES::TripleDES(const string& key1, const string& key2, const string& key3){
     key1_ = key1;
     key2_ = key2;
     key3_ = key3;
-}
-string TripleDES::encrypt(string& plaintext){
-    //In construction
-    return apply_padding(plaintext);
-}
-string TripleDES::decrypt(string& ciphertext){
-    //In construction
-    return remove_padding(ciphertext);
 }
 string TripleDES::toBinary(int num){
     string binary = "";
@@ -107,4 +102,79 @@ string TripleDES::remove_padding(string& input){
         output = output + input[i];
     }
     return output;
+}
+
+string TripleDES::xor_strings(const string& str1, const string& str2){
+    string sum = "";
+    for (int i = 0; i < str1.length(); i++){
+        if (str1[i] == str2[i]){
+            sum = sum + "0";
+        }
+        else{
+            sum = sum + "1";
+        }
+    }
+    return sum;
+}
+string TripleDES::des_encrypt(const string& input, const string& key){
+    string encryptKey = key;
+    keyRotation keyMixing = keyRotation(encryptKey);
+    string cipher = input;
+    permutation per = permutation();
+    cipher = per.firstPer(cipher);
+    string subkey;
+    string left = ""; 
+    string right = "";
+    for (int i = 0; i < 32; i++){
+            left = left + cipher[i];
+            right = right + cipher[i + 32]; 
+        }
+    for (int i = 0; i < 16; i++){
+        subkey = keyMixing.nextRound();
+        f func = f(right, subkey);
+        cipher = func.execute();
+        cipher = xor_strings(left, cipher);
+        left = right;
+        right = cipher;
+    }
+    cipher = right + left;
+    cipher = per.lastPer(cipher);
+    return cipher;
+}
+
+string TripleDES::des_decrypt(const string& input, const string& key){
+    string encryptKey = key;
+    keyRotation keyMixing = keyRotation(encryptKey);
+    string cipher = input;
+    permutation per = permutation();
+    cipher = per.firstPer(cipher);
+    string subkey[16];
+    string left = "";
+    string right = "";
+    for (int i = 0; i < 16; i++){
+        subkey[i] = keyMixing.nextRound();
+    }
+    for (int i = 0; i < 32; i++){
+            left = left + cipher[i];
+            right = right + cipher[i + 32]; 
+        }
+    for (int i = 0; i < 16; i++){
+        f func = f(right, subkey[15 - i]);
+        cipher = func.execute();
+        cipher = xor_strings(left, cipher);
+        left = right;
+        right = cipher;
+    }
+    cipher = right + left;
+    cipher = per.lastPer(cipher);
+    return cipher;
+}
+
+string TripleDES::encrypt(string& plaintext){
+    string input = plaintext;
+    des_encrypt(plaintext, key1_);
+}
+string TripleDES::decrypt(string& ciphertext){
+    string input = ciphertext;
+    des_decrypt(ciphertext, key1_);
 }

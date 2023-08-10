@@ -1,8 +1,8 @@
 #pragma once
+#include <string>
 #ifndef KEY_ROTATION_H
 #define KEY_ROTATION_H
 
-#include <string>
 using namespace std;
 
 struct arr56{
@@ -38,13 +38,13 @@ class keyRotation{
         arr56 permutation();
         void getOrigianlBlocks();
     public:
-        keyRotation(string key);
+        keyRotation(string& key);
         string nextRound();
         int getRound(){return round;};
 };
 
 #endif
-keyRotation::keyRotation(string key){
+keyRotation::keyRotation(string& key){
     //Convert key to char array
     for (int i = 0; i < 64; i++){
         this->key[i] = key[i];

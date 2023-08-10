@@ -1,15 +1,14 @@
 #pragma once
+#include <string>
+#include <math.h>
 #ifndef FUNCTION_H
 #define FUNCTION_H
 
-#include <string>
-#include <math.h>
+
 using namespace std;
 
 class f{
     private:
-        void divide(string& input);
-        string L;
         string R;
         string subkey;
         int E[48] = {
@@ -22,8 +21,8 @@ class f{
             24,    25,   26,    27,    28,   29,
             28,    29,   30,    31,    32,    1
         };
-        void expand();
-        string xor_string(string& e);
+        string expand();
+        string xor_string(string& str1, string& str2);
         int S[8][4][16] = {
             {14,  4,  13,  1,   2, 15,  11,  8,   3, 10,   6, 12,   5,  9,   0,  7,
               0, 15,   7,  4,  14,  2,  13,  1,  10,  6,  12, 11,   9,  5,   3,  8,
@@ -68,36 +67,38 @@ class f{
         string SBox_sub(int num, string& sequence);
         string toBinary(int num);
         int toDecimal(string& binary);
+        int P[32] = {
+            16,   7,  20,  21,
+            29,  12,  28,  17,
+             1,  15,  23,  26,
+             5,  18,  31,  10,
+             2,   8,  24,  14,
+            32,  27,   3,   9,
+            19,  13,  30,   6,
+            22,  11,   4,  25
+        };
+        string permutation(string& str);
     public:
         f(string& input, string& subkey);
         string execute();
 };
 #endif
-void f::divide(string& input){
-    int length = input.length();
-    L = "";
-    R = "";
-    for (int i = 0; i < (length/2); i++){
-        L = L + input[i];
-        R = R + input[i + length/2];
-    }
-};
-
-void f::expand(){
+string f::expand(){
     char r[48];
     for (int i = 0; i < 48; i++){
         r[i] = R[E[i] - 1];
     }
-    R = "";
+    string expansion = "";
     for (int i = 0; i < 48; i++){
-        R = R + r[i];
+        expansion = expansion + r[i];
     }
+    return expansion;
 };
 
-string f::xor_string(string& e){
+string f::xor_string(string& str1, string& str2){
     string result = "";
-    for (int i = 0; i < e.length(); i++){
-        if (e[i] == subkey[i]){
+    for (int i = 0; i < str1.length(); i++){
+        if (str1[i] == str2[i]){
             result = result + "0";
         }
         else{
@@ -143,13 +144,21 @@ string f::SBox_sub(int num, string& sequence){
 };
 
 f::f(string& input, string& subkey){
-    divide(input);
+    R = input;
     this->subkey = subkey;
 };
 
+string f::permutation(string& str){
+    string result = "";
+    for (int i = 0; i < 32; i++){
+        result = result + str[P[i] - 1];
+    }
+    return result;
+}
+
 string f::execute(){
-    expand();
-    string xorString = xor_string(R);
+    string ExpandR = expand();
+    string xorString = xor_string(ExpandR, subkey);
     string result = "";
     string sBox = "";
     for (int i = 0; i < 8; i++){
@@ -159,6 +168,7 @@ string f::execute(){
         }
         result = result + SBox_sub(i, sBox);
     }
+    result = permutation(result);
     return result;
 }
 
