@@ -20,7 +20,7 @@ public:
     string encrypt(string& plaintext);
 
     // Decrypts the ciphertext using Triple DES.
-    string decrypt(string& ciphertext);
+    string decrypt(string& ciphertext, bool hasPaddings);
 
 private:
     string key1_; // First 8 bytes of the 2-key or 3-key Triple DES key.
@@ -47,11 +47,17 @@ TripleDES::TripleDES(const string& key1, const string& key2){
     key1_ = key1;
     key2_ = key2;
     key3_ = key1;
+    if (key1_.length() != 64 || key2_.length() != 64){
+        throw invalid_argument("One or more keys does not have 64 bits");
+    }
 }
 TripleDES::TripleDES(const string& key1, const string& key2, const string& key3){
     key1_ = key1;
     key2_ = key2;
     key3_ = key3;
+    if (key1_.length() != 64 || key2_.length() != 64 || key3_.length() != 64){
+        throw invalid_argument("One or more keys does not have 64 bits");
+    }
 }
 string TripleDES::toBinary(int num){
     string binary = "";
@@ -83,6 +89,9 @@ string TripleDES::apply_padding(string& input){
     int paddingBits;
     if (length % 64 != 0){
         paddingBits = 64 - (length % 64);
+    }
+    else{
+        return output;
     }
     for (int i = 0; i < paddingBits - 8; i++){
         output = output + "0";
@@ -171,10 +180,18 @@ string TripleDES::des_decrypt(const string& input, const string& key){
 }
 
 string TripleDES::encrypt(string& plaintext){
-    string input = plaintext;
-    des_encrypt(plaintext, key1_);
+    string ciphertext = apply_padding(plaintext);
+    ciphertext = des_encrypt(ciphertext, key1_);
+    ciphertext = des_decrypt(ciphertext, key2_);
+    ciphertext = des_encrypt(ciphertext, key3_);
+    return ciphertext;
 }
-string TripleDES::decrypt(string& ciphertext){
-    string input = ciphertext;
-    des_decrypt(ciphertext, key1_);
+string TripleDES::decrypt(string& ciphertext, bool hasPaddings){
+    string plaintext = des_decrypt(ciphertext, key3_);
+    plaintext = des_encrypt(ciphertext, key2_);
+    plaintext = des_decrypt(ciphertext, key1_);
+    if (hasPaddings){
+        plaintext = remove_padding(plaintext);
+    }
+    return plaintext;
 }
