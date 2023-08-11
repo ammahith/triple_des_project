@@ -32,6 +32,7 @@ int main()
             cout << "Invalid input. Please try again: " << endl;
         }
 
+        char answer;
         if (choice == 1)
         {
             cout << "Enter plaintext: " << endl;
@@ -39,22 +40,26 @@ int main()
         else if (choice == 2)
         {
             cout << "Does plaintext include paddings: Y/N" << endl;
-            char answer;
             while (!(cin >> answer) || (toupper(answer) != 'Y' && toupper(answer) != 'N'))
             {
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 cout << "Invalid input. Please try again: " << endl;
             }
-            if (toupper(answer) == 'Y')
-            {
-                hasPaddings = true;
-            }
             cout << "Enter ciphertext: " << endl;
         }
         translate trns;
         string text;
         cin >> text;
+        if (inputForm == 2){
+            for (int i = 0; i < text.length(); i++){
+                if (!((text[i] >= '0' && text[i] <= '9') 
+                || (text[i] >= 'a' && text[i] <= 'f') 
+                || (text[i] >= 'A' && text[i] <= 'F'))){
+                    throw invalid_argument("Invalid character in Hex");
+                }
+            }
+        }
         int length = text.length();
         int fragmentLength;
         if (inputForm == 1){
@@ -75,10 +80,10 @@ int main()
             fragmnets[i] = "";
             while (j < fragmentLength && (i * fragmentLength) + j < length)
             {
-                fragmnets[i] = fragmnets[i] + text[(i * 8) + j];
+                fragmnets[i] = fragmnets[i] + text[(i * fragmentLength) + j];
                 j++;
             }
-            if (inputForm ==1){
+            if (inputForm == 1){
                 fragmnets[i] = trns.fromTextToBinary(fragmnets[i]);
             }
             else{
@@ -106,19 +111,19 @@ int main()
         key2 = trns.fromTextToBinary(key2);
 
         cout << "Use third key? Y/N" << endl;
-        char answer;
+        char thirdKey;
         string key3;
         bool hasThirdKey = false;
-        while (!(cin >> answer) || (toupper(answer) != 'Y' && toupper(answer) != 'N'))
+        while (!(cin >> thirdKey) || (toupper(thirdKey) != 'Y' && toupper(thirdKey) != 'N'))
         {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cout << "Invalid input. Please try again: " << endl;
         }
-        if (toupper(answer) == 'Y')
+        if (toupper(thirdKey) == 'Y')
         {
             hasThirdKey = true;
-            cout << "Enter the second key: " << endl;
+            cout << "Enter the third key: " << endl;
             cin >> key3;
             while (key3.length() != 8)
             {
@@ -132,20 +137,31 @@ int main()
             object = TripleDES(key1, key2, key3);
         }
 
-        string output = "";
+        string outputHex = "";
+        string outputText = "";
         for (int i = 0; i < amountOfFragment; i++){
             if (choice == 1){
                 fragmnets[i] = object.encrypt(fragmnets[i]);
             }
             else{
+                if (toupper(answer) == 'Y' && i == amountOfFragment - 1)
+                {
+                    hasPaddings = true;
+                }
                 fragmnets[i] = object.decrypt(fragmnets[i], hasPaddings);
             }
-            fragmnets[i] = trns.fromBinaryToHex(fragmnets[i]);
-            output = output + fragmnets[i];
+            outputHex = outputHex + trns.fromBinaryToHex(fragmnets[i]);
+            outputText = outputText + trns.fromBinaryToText(fragmnets[i]);
         }
-        cout << "Result: " << endl;
-        cout << output << endl;
+        cout << "Result in Hex: " << endl;
+        cout << outputHex << endl;
+        cout << "Result in English: " << endl;
+        cout << outputText << endl;
         return 0;
+    }
+    catch(invalid_argument& e){
+        cout << e.what() << endl;
+        return -1;
     }
     catch (...)
     {

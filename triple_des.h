@@ -188,8 +188,8 @@ string TripleDES::encrypt(string& plaintext){
 }
 string TripleDES::decrypt(string& ciphertext, bool hasPaddings){
     string plaintext = des_decrypt(ciphertext, key3_);
-    plaintext = des_encrypt(ciphertext, key2_);
-    plaintext = des_decrypt(ciphertext, key1_);
+    plaintext = des_encrypt(plaintext, key2_);
+    plaintext = des_decrypt(plaintext, key1_);
     if (hasPaddings){
         plaintext = remove_padding(plaintext);
     }

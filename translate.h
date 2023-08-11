@@ -13,6 +13,7 @@ public:
     string fromTextToBinary(string &str);
     string fromBinaryToHex(string &binary);
     string fromHexToBinary(string &hex);
+    string fromBinaryToText(string& binary);
 };
 #endif
 
@@ -74,6 +75,7 @@ string translate::fromHexToBinary(string& hex){
     int num;
     for (int i = 0; i < hex.length(); i++){
         if (hex[i] > '9'){
+            hex[i] = toupper(hex[i]);
             num = hex[i] - 55;
         }
         else{
@@ -96,6 +98,23 @@ string translate::fromHexToBinary(string& hex){
             }
         }
 
+    }
+    return result;
+}
+string translate::fromBinaryToText(string& binary){
+    int ascii[binary.length()/8];
+    string result = "";
+    char letter;
+    int length = binary.length();
+    for (int i = 0; i < length/8; i++){
+        ascii[i] = 0;
+        for (int j = 0; j < 8; j++){
+            if (binary[(i*8)+j] == '1'){
+                ascii[i] = ascii[i] + pow(2, 7 - j);
+            }
+        }
+        letter = ascii[i];
+        result = result + letter;
     }
     return result;
 }
