@@ -70,10 +70,6 @@ int main()
             }
             int length = text.length();
             bool havePaddingsEncrypt = true;
-            if (length % 8 == 0)
-            {
-                havePaddingsEncrypt = false;
-            }
             int fragmentLength;
             if (inputForm == 1)
             {
@@ -82,6 +78,10 @@ int main()
             else
             {
                 fragmentLength = 16;
+            }
+            if (length % fragmentLength == 0)
+            {
+                havePaddingsEncrypt = false;
             }
             int amountOfFragment = length / fragmentLength;
             if (length % fragmentLength != 0)
