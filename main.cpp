@@ -69,6 +69,11 @@ int main()
                 }
             }
             int length = text.length();
+            bool havePaddingsEncrypt = true;
+            if (length % 8 == 0)
+            {
+                havePaddingsEncrypt = false;
+            }
             int fragmentLength;
             if (inputForm == 1)
             {
@@ -156,6 +161,16 @@ int main()
             cout << outputHex << endl;
             cout << "Result in English: " << endl;
             cout << outputText << endl;
+            if (choice == 1)
+            {
+                if (havePaddingsEncrypt)
+                {
+                    cout << "Ciphertext contains paddings." << endl;
+                }
+                else{
+                    cout << "Ciphertext contains NO paddings" << endl;
+                }
+            }
         }
         catch (invalid_argument &e)
         {
@@ -165,7 +180,7 @@ int main()
         {
             cout << "An error has occured" << endl;
         }
-        
+
         cout << "Enter any key to retry, or \"q\" to exit: " << endl;
         cin >> done;
     }
